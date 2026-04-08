@@ -31,8 +31,6 @@ jobs:
       run: |
         Compress-Archive -Force -Path @(
           "Elmer_prediction.py",
-          "Elmer_sentiment.py",
-          "Elmer_ML_CORE.py",
           "requirements.txt",
           "Pickle file"
         ) -DestinationPath "deployment.zip"

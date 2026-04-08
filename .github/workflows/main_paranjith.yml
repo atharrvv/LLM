@@ -30,7 +30,7 @@ jobs:
     - name: Create Deployment ZIP     # ← CI step
       run: |
         Compress-Archive -Force -Path @(
-          "Elmer_prediction.py",
+          "function_app.py",
           "requirements.txt",
           "Pickle file"
         ) -DestinationPath "deployment.zip"

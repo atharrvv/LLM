@@ -1,30 +1,61 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy Powershell project to Azure Function App - PaRanjith
+name: Deploy ElmerML to Azure Function App
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
+  AZURE_FUNCTIONAPP_NAME: 'PaRanjith'
 
 jobs:
-  deploy:
+  build:                              # ← CI part (you add this)
     runs-on: windows-latest
-    
+
     steps:
-      - name: 'Checkout GitHub Action'
-        uses: actions/checkout@v4
-      
-      - name: 'Run Azure Functions Action'
-        uses: Azure/functions-action@v1
-        id: fa
-        with:
-          app-name: 'PaRanjith'
-          slot-name: 'Production'
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_987CA98F99234A3FB98FCBD0EF19B61B }}
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Dependencies      # ← CI step
+      run: pip install -r requirements.txt
+
+    - name: Verify Pickle File        # ← CI step
+      run: Get-ChildItem "Pickle file/"
+
+    - name: Create Deployment ZIP     # ← CI step
+      run: |
+        Compress-Archive -Force -Path @(
+          "Elmer_prediction.py",
+          "Elmer_sentiment.py",
+          "Elmer_ML_CORE.py",
+          "requirements.txt",
+          "Pickle file"
+        ) -DestinationPath "deployment.zip"
+
+    - name: Upload ZIP as Artifact    # ← hands zip from CI to CD
+      uses: actions/upload-artifact@v4
+      with:
+        name: elmerml-package
+        path: deployment.zip
+
+  deploy:                             # ← CD part (Azure generated this)
+    runs-on: windows-latest
+    needs: build                      # ← waits for CI to finish
+
+    steps:
+    - name: Download ZIP Artifact     # ← picks up zip from CI
+      uses: actions/download-artifact@v4
+      with:
+        name: elmerml-package
+
+    - name: Deploy to Azure Function App
+      uses: Azure/functions-action@v1
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        package: './deployment.zip'
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_987CA98F99234A3FB98FCBD0EF19B61B }}

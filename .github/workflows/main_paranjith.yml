@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 env:
   AZURE_FUNCTIONAPP_NAME: 'PaRanjith'
@@ -59,6 +58,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: python-app
+
+        # ADD THIS to verify zip is present after download
+    - name: Verify ZIP after download
+      run: |
+        ls -la
+        ls -la deployment.zip
 
     # NO unzip step - deploy zip directly
     - name: Deploy to Azure Functions

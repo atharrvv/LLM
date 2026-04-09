@@ -1,7 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure Functions: https://aka.ms/python-webapps-actions
-
 name: Build and deploy Python project to Azure Function App - PaRanjith
 
 on:
@@ -11,67 +7,66 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
-  PYTHON_VERSION: '3.10' # set this to the python version to use (supports 3.6, 3.7, 3.8)
+  AZURE_FUNCTIONAPP_NAME: 'PaRanjith'
+  PYTHON_VERSION: '3.10'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Setup Python version
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+    - name: Setup Python version
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Create and start virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
+    - name: Install dependencies
+      run: pip install -r requirements.txt
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+    - name: Verify Pickle File
+      run: ls -la "Pickle file/"
 
-      # Optional: Add step to run tests here
+    # ZIP only required files
+    - name: Create Deployment ZIP
+      run: |
+        zip -r deployment.zip \
+          "function_app.py" \
+          "requirements.txt" \
+          "host.json" \
+          "Pickle file/"
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+    - name: Verify ZIP Contents
+      run: unzip -l deployment.zip
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: |
-            release.zip
-            !venv/
+    # Upload only deployment.zip
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-app
+        path: deployment.zip       # ← only zip, nothing else
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
 
-      - name: Unzip artifact for deployment
-        run: |
-          unzip release.zip
-          rm release.zip
-        
-      - name: 'Deploy to Azure Functions'
-        uses: Azure/functions-action@v1
-        id: deploy-to-function
-        with:
-          app-name: 'PaRanjith'
-          slot-name: 'Production'
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_36995A9F0F974B0BA9660C213D268E7E }}
-          scm-do-build-during-deployment: false    # ← ADD this
-          enable-oryx-build: false                 # ← ADD this
+    steps:
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v4
+      with:
+        name: python-app
+
+    # NO unzip step - deploy zip directly
+    - name: Deploy to Azure Functions
+      uses: Azure/functions-action@v1
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        slot-name: 'Production'
+        package: './deployment.zip'   # ← direct zip, no dot
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_36995A9F0F974B0BA9660C213D268E7E }}
+        scm-do-build-during-deployment: false
+        enable-oryx-build: false

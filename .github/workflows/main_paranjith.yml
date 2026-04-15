@@ -71,11 +71,11 @@ jobs:
         with:
           creds: ${{ secrets.SERVICE_PRINCIPLE }}
 
-      # - name: 'Deploy to Azure Functions'
-      #   uses: Azure/functions-action@v1
-      #   id: deploy-to-function
-      #   with:
-      #     app-name: 'PaRanjith'
-      #     slot-name: 'Production'
-      #     package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+      - name: 'Deploy to Azure Functions'
+        uses: Azure/functions-action@v1
+        id: deploy-to-function
+        with:
+          app-name: 'new-function-app'
+          slot-name: 'Production'
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           # publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BE946644FE244B85904FD6C0A31EE239 }}

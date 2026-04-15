@@ -79,11 +79,14 @@ jobs:
         with:
           creds: ${{ secrets.SERVICE_PRINCIPLE }}
 
-      - name: 'Deploy to Azure Functions'
-        uses: Azure/functions-action@v1
-        id: deploy-to-function
-        with:
-          app-name: 'new-function-app'
-          slot-name: 'Production'
-          package: release.zip
+      - name: Debug files
+        run: ls -R
+
+      # - name: 'Deploy to Azure Functions'
+      #   uses: Azure/functions-action@v1
+      #   id: deploy-to-function
+      #   with:
+      #     app-name: 'new-function-app'
+      #     slot-name: 'Production'
+      #     package: release.zip
           # publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BE946644FE244B85904FD6C0A31EE239 }}

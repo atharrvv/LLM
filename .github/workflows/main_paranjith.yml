@@ -68,10 +68,10 @@ jobs:
         with:
           name: python-app
 
-      - name: Unzip artifact for deployment
-        run: |
-          unzip release.zip
-          rm release.zip
+      # - name: Unzip artifact for deployment
+      #   run: |
+      #     unzip release.zip
+      #     rm release.zip
 
       
       - name: Azure Login

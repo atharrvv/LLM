@@ -42,8 +42,11 @@ jobs:
       - name: check directory
         run: ls -la ./new/
 
-  #     - name: Zip artifact for deployment
-  #       run: zip release.zip ./new/* -r
+      - name: Zip artifact for deployment
+        run: zip release.zip ./new/* -r
+
+      - name: check zip file
+        run: ls -la
 
   #     - name: Upload artifact for deployment job
   #       uses: actions/upload-artifact@v4

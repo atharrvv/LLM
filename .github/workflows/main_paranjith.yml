@@ -43,7 +43,9 @@ jobs:
         run: ls -la ./new/
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./new/* -r
+        run: |
+            cd new
+            zip -r ../release.zip .
 
       - name: check zip file
         run: ls -la
